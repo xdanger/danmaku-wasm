@@ -49,4 +49,8 @@
 
 ## 项目地址
 
-GitHub: [https://github.com/dashhuang/danmaku-game](https://github.com/dashhuang/danmaku-game) 
+GitHub: [https://github.com/dashhuang/danmaku-game](https://github.com/dashhuang/danmaku-game)
+
+## 更新日志
+
+2023-03-27: 更新了作者信息，修复了GitHub验证问题 
