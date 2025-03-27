@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹幕飞机游戏</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 480px;
+            height: 720px;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #000;
+            z-index: 1;
+            border: 1px solid #333;
+        }
+        
+        .ui {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            user-select: none;
+        }
+        
+        .time {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .game-over, .start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            pointer-events: auto;
+        }
+        
+        .game-over h2, .start-screen h1 {
+            margin-bottom: 30px;
+            font-size: 36px;
+            color: #fff;
+            text-shadow: 0 0 10px #0af;
+        }
+        
+        .start-screen p {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #ccc;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            pointer-events: auto;
+        }
+        
+        button:hover {
+            background: #0088ff;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #aaa;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <div class="ui">
+            <div class="time">时间: <span id="time-value">00:00.00</span></div>
+            
+            <div id="start-screen" class="start-screen">
+                <h1>弹幕飞机游戏</h1>
+                <p>使用方向键或WASD移动飞机</p>
+                <p>躲避所有弹幕！坚持时间越长越好</p>
+                <button id="start-button">开始游戏</button>
+            </div>
+            
+            <div id="game-over-screen" class="game-over hidden">
+                <h2>游戏结束</h2>
+                <p>坚持时间: <span id="final-time">00:00.00</span></p>
+                <button id="restart-button">再来一次</button>
+            </div>
+            
+            <div class="controls">
+                使用方向键或WASD移动飞机<br>
+                按 P 暂停游戏 | 按 0 开启/关闭调试模式
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/game.js"></script>
+</body>
+</html> 

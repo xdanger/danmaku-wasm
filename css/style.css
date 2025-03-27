@@ -1,0 +1,172 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    background-color: #000;
+    color: #fff;
+    overflow: hidden;
+    touch-action: none;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#three-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 10;
+}
+
+.hidden {
+    display: none;
+}
+
+h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #fff;
+    text-shadow: 0 0 10px #66f, 0 0 20px #66f, 0 0 30px #66f;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px #66f, 0 0 20px #66f, 0 0 30px #66f;
+    }
+    to {
+        text-shadow: 0 0 20px #88f, 0 0 30px #88f, 0 0 40px #88f;
+    }
+}
+
+h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: #f66;
+    text-shadow: 0 0 10px #f66, 0 0 20px #f66;
+}
+
+button {
+    padding: 12px 24px;
+    font-size: 18px;
+    background-color: #4444ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 10px 0;
+    transition: all 0.2s;
+    box-shadow: 0 0 15px rgba(100, 100, 255, 0.7);
+}
+
+button:hover {
+    background-color: #5555ff;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(100, 100, 255, 0.9);
+}
+
+#instructions {
+    margin-top: 20px;
+    text-align: center;
+    background-color: rgba(0, 0, 50, 0.5);
+    padding: 15px;
+    border-radius: 10px;
+    backdrop-filter: blur(5px);
+    max-width: 80%;
+}
+
+#instructions p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+#game-stats {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 5;
+    font-size: 18px;
+    padding: 10px;
+    background-color: rgba(0, 0, 50, 0.5);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(100, 100, 255, 0.5);
+}
+
+#virtual-joystick {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+}
+
+#joystick-base {
+    width: 120px;
+    height: 120px;
+    background-color: rgba(100, 100, 255, 0.2);
+    border-radius: 50%;
+    position: relative;
+    border: 2px solid rgba(100, 100, 255, 0.5);
+    box-shadow: 0 0 15px rgba(100, 100, 255, 0.5);
+}
+
+#joystick-thumb {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(100, 100, 255, 0.6);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px rgba(100, 100, 255, 0.8);
+}
+
+/* 适配不同屏幕尺寸 */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 36px;
+    }
+    
+    h2 {
+        font-size: 28px;
+    }
+    
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+    
+    #joystick-base {
+        width: 100px;
+        height: 100px;
+    }
+    
+    #joystick-thumb {
+        width: 40px;
+        height: 40px;
+    }
+} 
