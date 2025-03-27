@@ -17,6 +17,11 @@ class Game {
         this.canvas = document.getElementById('game-canvas');
         this.ctx = this.canvas.getContext('2d');
         
+        // 性能优化，禁用抗锯齿
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            this.ctx.imageSmoothingEnabled = false;
+        }
+        
         // 设置canvas尺寸
         this.canvas.width = 480;
         this.canvas.height = 720;
@@ -48,6 +53,7 @@ class Game {
         this.lastTouchY = 0;
         this.touchMoveX = 0;
         this.touchMoveY = 0;
+        this.touchMoveHistory = []; // 移动历史记录，用于平滑处理
         
         // 检测是否是移动设备
         this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -128,6 +134,9 @@ class Game {
             this.lastTouchY = this.touchY;
             this.touchMoveX = 0;
             this.touchMoveY = 0;
+            
+            // 重置移动历史，用于平滑处理
+            this.touchMoveHistory = [];
         }, { passive: false });
         
         this.canvas.addEventListener('touchmove', (e) => {
@@ -139,8 +148,26 @@ class Game {
             this.touchY = touch.clientY;
             
             // 计算移动差值
-            this.touchMoveX = this.touchX - this.lastTouchX;
-            this.touchMoveY = this.touchY - this.lastTouchY;
+            const moveX = this.touchX - this.lastTouchX;
+            const moveY = this.touchY - this.lastTouchY;
+            
+            // 更新移动历史，保留最近5个移动记录
+            this.touchMoveHistory.push({x: moveX, y: moveY});
+            if (this.touchMoveHistory.length > 5) {
+                this.touchMoveHistory.shift();
+            }
+            
+            // 计算平均移动量，实现平滑
+            this.touchMoveX = 0;
+            this.touchMoveY = 0;
+            const historyLength = this.touchMoveHistory.length;
+            
+            for (let i = 0; i < historyLength; i++) {
+                // 较新的移动给予更高权重
+                const weight = (i + 1) / historyLength;
+                this.touchMoveX += this.touchMoveHistory[i].x * weight;
+                this.touchMoveY += this.touchMoveHistory[i].y * weight;
+            }
             
             // 更新上一个触摸位置
             this.lastTouchX = this.touchX;
@@ -150,8 +177,8 @@ class Game {
         this.canvas.addEventListener('touchend', (e) => {
             e.preventDefault(); // 防止默认滚动行为
             this.isTouching = false;
-            this.touchMoveX = 0;
-            this.touchMoveY = 0;
+            // 触摸结束时不立即归零，而是逐渐减小，实现滑动惯性
+            // 在updatePlayer方法中处理
         }, { passive: false });
         
         // 响应窗口大小变化
@@ -405,22 +432,37 @@ class Game {
         if (!this.player) return;
         
         // 移动设备上使用触摸控制
-        if (this.isMobile && this.isTouching) {
+        if (this.isMobile) {
             // 获取画布在网页中的位置
             const rect = this.canvas.getBoundingClientRect();
             const scaleX = this.canvas.width / rect.width;
             const scaleY = this.canvas.height / rect.height;
             
-            // 使用触摸移动差值计算移动方向
-            let moveX = this.touchMoveX * scaleX * 0.1; // 缩放移动速度
-            let moveY = this.touchMoveY * scaleY * 0.1;
+            if (this.isTouching) {
+                // 使用触摸移动差值计算移动方向，增加灵敏度
+                const moveX = this.touchMoveX * scaleX * 0.2; // 提高灵敏度，从0.1增加到0.2
+                const moveY = this.touchMoveY * scaleY * 0.2;
+                
+                // 应用阻尼效果，平滑移动
+                this.player.velocityX = this.player.velocityX * 0.5 + moveX * 0.5;
+                this.player.velocityY = this.player.velocityY * 0.5 + moveY * 0.5;
+            } else {
+                // 触摸结束后，实现滑动惯性，逐渐减小速度
+                this.player.velocityX *= 0.9;
+                this.player.velocityY *= 0.9;
+                
+                // 当速度非常小时，停止移动
+                if (Math.abs(this.player.velocityX) < 0.1) this.player.velocityX = 0;
+                if (Math.abs(this.player.velocityY) < 0.1) this.player.velocityY = 0;
+            }
             
-            // 限制最大移动速度
-            const maxSpeed = 1;
-            if (Math.abs(moveX) > maxSpeed) moveX = Math.sign(moveX) * maxSpeed;
-            if (Math.abs(moveY) > maxSpeed) moveY = Math.sign(moveY) * maxSpeed;
-            
-            this.player.setVelocity(moveX, moveY);
+            // 限制最大速度
+            const maxSpeed = this.player.speed;
+            const currentSpeed = Math.sqrt(this.player.velocityX * this.player.velocityX + this.player.velocityY * this.player.velocityY);
+            if (currentSpeed > maxSpeed) {
+                this.player.velocityX = (this.player.velocityX / currentSpeed) * maxSpeed;
+                this.player.velocityY = (this.player.velocityY / currentSpeed) * maxSpeed;
+            }
         } else {
             // 处理键盘输入
             let moveX = 0;
@@ -1433,8 +1475,9 @@ class Player {
     
     update(deltaTime) {
         // 计算移动
-        this.x += this.velocityX;
-        this.y += this.velocityY;
+        const scaledDeltaTime = Math.min(deltaTime, 32) / 16; // 限制最大时间差，防止帧率过低时移动过大
+        this.x += this.velocityX * scaledDeltaTime;
+        this.y += this.velocityY * scaledDeltaTime;
         
         // 边界检测
         if (this.x - this.width / 2 < 0) this.x = this.width / 2;
