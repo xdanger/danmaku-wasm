@@ -1,19 +1,21 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>弹幕飞机游戏</title>
     <style>
         body {
             margin: 0;
+            padding: 0;
             overflow: hidden;
-            background: #000;
+            background-color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             font-family: Arial, sans-serif;
+            touch-action: none; /* 防止触摸事件导致页面滚动 */
         }
         
         #game-container {
@@ -105,6 +107,23 @@
             color: #aaa;
             font-size: 14px;
         }
+        
+        /* 响应式样式 */
+        @media (max-width: 768px) {
+            .desktop-only {
+                display: none;
+            }
+            
+            .controls {
+                display: none; /* 移动设备隐藏底部控制说明 */
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-only {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -116,7 +135,8 @@
             
             <div id="start-screen" class="start-screen">
                 <h1>弹幕飞机游戏</h1>
-                <p>使用方向键或WASD移动飞机</p>
+                <p class="desktop-only">使用方向键或WASD移动飞机</p>
+                <p class="mobile-only">滑动屏幕控制飞机移动</p>
                 <p>躲避所有弹幕！坚持时间越长越好</p>
                 <button id="start-button">开始游戏</button>
             </div>

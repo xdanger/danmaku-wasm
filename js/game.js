@@ -34,49 +34,123 @@ class Game {
         this.particles = [];
         this.enemies = [];
         
-        // 粒子系统限制
-        this.maxParticles = 500; // 默认最大粒子数量，从300改为500
-        this.initialMaxParticles = 500; // 初始值，用于重置
+        // 触摸控制相关变量
+        this.isTouching = false;
+        this.touchX = 0;
+        this.touchY = 0;
+        this.lastTouchX = 0;
+        this.lastTouchY = 0;
+        this.touchMoveX = 0;
+        this.touchMoveY = 0;
         
-        // 弹幕系统限制
-        this.maxBullets = 200; // 最大弹幕数量，从500调整为200
+        // 检测是否是移动设备
+        this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // 游戏参数
+        this.bulletPatterns = [
+            'circle', 'spiral', 'wave', 'heart', 'star', 'zigzag'
+        ];
+        
+        // 设置游戏速度相关参数
+        this.difficulty = 1.0; // 游戏难度
+        this.maxDifficulty = 10.0; // 最大难度
+        this.difficultyTimer = 0; // 难度增加计时器
+        this.difficultyIncreaseInterval = 5000; // 每5秒增加难度
+        
+        // 弹幕频率参数
+        this.bulletFrequencyMin = null; // 由难度动态计算
+        this.bulletFrequencyMax = null; // 由难度动态计算
+        this.nextBulletTime = 1000; // 下一个弹幕生成时间
+        
+        // 弹幕数量上限 - 用于性能优化
+        this.maxBullets = 500;
+        
+        // 粒子效果
+        this.initialMaxParticles = 300; // 初始粒子数量上限
+        this.maxParticles = this.initialMaxParticles; // 当前粒子数量上限
         
         // 性能监控
-        this.fpsHistory = []; // 存储最近的FPS值
-        this.fpsHistoryMaxLength = 10; // 保存最近10帧的FPS
-        this.lowPerformanceMode = false; // 低性能模式标志
-        this.performanceCheckInterval = 1000; // 每秒检查一次性能
+        this.deltaTime = 0; // 帧间时间差（毫秒）
+        this.lastTime = 0; // 上一帧时间
+        this.fpsHistory = []; // 存储最近的FPS数据
+        this.fpsHistoryMaxLength = 60; // 存储60帧的FPS数据
         this.performanceCheckTimer = 0;
+        this.performanceCheckInterval = 2000; // 每2秒检查一次性能
+        this.lowPerformanceMode = false; // 低性能模式标志
         
-        // 弹幕发射器
-        this.bulletEmitter = new BulletEmitter(this);
-        this.nextBulletTime = 0;
-        
-        // 游戏难度相关
-        this.difficulty = 1;
-        this.difficultyIncreaseInterval = 5000; // 5秒增加一次难度（从10秒改为5秒）
-        this.difficultyTimer = 0;
-        
-        // UI元素
-        this.timeDisplay = document.getElementById('time-value');
-        this.finalTimeDisplay = document.getElementById('final-time');
+        // 获取游戏UI元素
         this.startScreen = document.getElementById('start-screen');
         this.gameOverScreen = document.getElementById('game-over-screen');
-        this.startButton = document.getElementById('start-button');
-        this.restartButton = document.getElementById('restart-button');
+        this.timeDisplay = document.getElementById('time-value');
+        this.finalTimeDisplay = document.getElementById('final-time');
         
-        // 键盘状态
+        // 添加按钮事件监听器
+        document.getElementById('start-button').addEventListener('click', () => this.startGame());
+        document.getElementById('restart-button').addEventListener('click', () => this.restartGame());
+        
+        // 游戏循环标志
+        this.isRunning = false;
+        
+        // 键盘事件
         this.keys = {};
+        window.addEventListener('keydown', (e) => {
+            this.keys[e.key] = true;
+            
+            // 特殊按键处理
+            if (e.key === '0') {
+                this.toggleDebug();
+            }
+            // 按I键切换无敌模式（调试模式下）
+            if (e.key === 'i' || e.key === 'I') {
+                this.toggleInvincible();
+            }
+        });
         
-        // 绑定事件
-        this.bindEvents();
+        window.addEventListener('keyup', (e) => {
+            this.keys[e.key] = false;
+        });
         
-        // 帧率和时间管理
-        this.lastTime = 0;
-        this.deltaTime = 0;
+        // 添加触摸事件监听器（用于移动设备）
+        this.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // 防止默认滚动行为
+            this.isTouching = true;
+            
+            const touch = e.touches[0];
+            this.touchX = touch.clientX;
+            this.touchY = touch.clientY;
+            this.lastTouchX = this.touchX;
+            this.lastTouchY = this.touchY;
+            this.touchMoveX = 0;
+            this.touchMoveY = 0;
+        }, { passive: false });
         
-        // 添加视觉反馈元素
-        this.feedbackElements = [];
+        this.canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // 防止默认滚动行为
+            if (!this.isTouching) return;
+            
+            const touch = e.touches[0];
+            this.touchX = touch.clientX;
+            this.touchY = touch.clientY;
+            
+            // 计算移动差值
+            this.touchMoveX = this.touchX - this.lastTouchX;
+            this.touchMoveY = this.touchY - this.lastTouchY;
+            
+            // 更新上一个触摸位置
+            this.lastTouchX = this.touchX;
+            this.lastTouchY = this.touchY;
+        }, { passive: false });
+        
+        this.canvas.addEventListener('touchend', (e) => {
+            e.preventDefault(); // 防止默认滚动行为
+            this.isTouching = false;
+            this.touchMoveX = 0;
+            this.touchMoveY = 0;
+        }, { passive: false });
+        
+        // 响应窗口大小变化
+        window.addEventListener('resize', () => this.handleResize());
+        this.handleResize();
     }
     
     bindEvents() {
@@ -290,18 +364,37 @@ class Game {
     updatePlayer() {
         if (!this.player) return;
         
-        // 处理键盘输入
-        let moveX = 0;
-        let moveY = 0;
-        
-        // 方向键
-        if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) moveX -= 1;
-        if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) moveX += 1;
-        if (this.keys['ArrowUp'] || this.keys['w'] || this.keys['W']) moveY -= 1;
-        if (this.keys['ArrowDown'] || this.keys['s'] || this.keys['S']) moveY += 1;
-        
-        // 设置玩家速度
-        this.player.setVelocity(moveX, moveY);
+        // 移动设备上使用触摸控制
+        if (this.isMobile && this.isTouching) {
+            // 获取画布在网页中的位置
+            const rect = this.canvas.getBoundingClientRect();
+            const scaleX = this.canvas.width / rect.width;
+            const scaleY = this.canvas.height / rect.height;
+            
+            // 使用触摸移动差值计算移动方向
+            let moveX = this.touchMoveX * scaleX * 0.1; // 缩放移动速度
+            let moveY = this.touchMoveY * scaleY * 0.1;
+            
+            // 限制最大移动速度
+            const maxSpeed = 1;
+            if (Math.abs(moveX) > maxSpeed) moveX = Math.sign(moveX) * maxSpeed;
+            if (Math.abs(moveY) > maxSpeed) moveY = Math.sign(moveY) * maxSpeed;
+            
+            this.player.setVelocity(moveX, moveY);
+        } else {
+            // 处理键盘输入
+            let moveX = 0;
+            let moveY = 0;
+            
+            // 方向键
+            if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) moveX -= 1;
+            if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) moveX += 1;
+            if (this.keys['ArrowUp'] || this.keys['w'] || this.keys['W']) moveY -= 1;
+            if (this.keys['ArrowDown'] || this.keys['s'] || this.keys['S']) moveY += 1;
+            
+            // 设置玩家速度
+            this.player.setVelocity(moveX, moveY);
+        }
         
         // 更新玩家
         this.player.update(this.deltaTime);
