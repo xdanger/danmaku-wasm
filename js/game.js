@@ -1143,13 +1143,12 @@ class Game {
         this.ctx.fillText(`难度: ${this.difficulty.toFixed(1)}`, 10, this.canvas.height - 15);
     }
     
-    // 格式化时间为分:秒.毫秒
+    // 格式化时间为秒.毫秒
     formatTime(timeInSeconds) {
-        const minutes = Math.floor(timeInSeconds / 60);
-        const seconds = Math.floor(timeInSeconds % 60);
+        const seconds = Math.floor(timeInSeconds);
         const milliseconds = Math.floor((timeInSeconds % 1) * 100);
         
-        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+        return `${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
     }
     
     // 新增：性能监控与自适应
