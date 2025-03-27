@@ -1011,62 +1011,63 @@ class Game {
         const seed = Math.floor(this.survivalTime); // 改为每秒更新一次，而不是每10秒
         const random = (n) => ((seed * 9301 + 49297) % 233280) / 233280 * n;
         
-        // 添加普通星星
+        // 添加普通星星 - 降低亮度
         this.ctx.fillStyle = 'white';
         
         for (let i = 0; i < 60; i++) {
             const x = random(this.canvas.width);
             const y = (random(this.canvas.height * 2) + this.survivalTime * 5) % this.canvas.height;
-            const size = random(2) + 1;
+            const size = random(2) + 0.5; // 减小星星尺寸
             
-            this.ctx.globalAlpha = 0.5 + random(0.5);
+            this.ctx.globalAlpha = 0.2 + random(0.3); // 降低不透明度使星星更淡
             this.ctx.fillRect(x, y, size, size);
         }
         
-        // 添加霓虹色闪烁星星
-        const neonColors = ['#ff00ff', '#00ffff', '#ff3377', '#22ffaa', '#1177ff'];
+        // 修改霓虹色闪烁星星为淡色系
+        // 使用更淡雅、柔和的颜色，减少色彩数量
+        const softColors = ['rgba(120, 140, 180, 0.5)', 'rgba(130, 160, 200, 0.5)', 'rgba(140, 170, 210, 0.5)']; 
         
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 15; i++) { // 减少数量
             // 使用连续的时间而不是离散的seed来计算位置
             const timeOffset = i * 0.5; // 每个星星有不同的时间偏移
             const x = (this.canvas.width * 0.1) + (this.canvas.width * 0.8) * ((Math.sin(this.survivalTime * 0.05 + timeOffset) + 1) / 2);
             const y = (this.canvas.height * 0.1) + (this.canvas.height * 0.7) * ((Math.cos(this.survivalTime * 0.03 + timeOffset) + 1) / 2);
             
-            // 使星星大小略有变化
-            const size = 3 + Math.sin(this.survivalTime * 0.2 + i) * 0.5;
-            const colorIndex = (Math.floor(i + this.survivalTime * 0.1) % neonColors.length);
-            const pulseRate = 0.5 + (i % 3) * 0.2; // 每个星星有固定的闪烁频率
+            // 使星星大小略有变化，但整体更小
+            const size = 2 + Math.sin(this.survivalTime * 0.2 + i) * 0.3;
+            const colorIndex = (Math.floor(i + this.survivalTime * 0.1) % softColors.length);
+            const pulseRate = 0.3 + (i % 3) * 0.1; // 降低闪烁频率
             
-            // 使用正弦函数创建闪烁效果
-            const flickerAlpha = 0.6 + 0.4 * Math.sin(this.survivalTime * pulseRate);
+            // 使用正弦函数创建闪烁效果，但降低整体亮度
+            const flickerAlpha = 0.3 + 0.2 * Math.sin(this.survivalTime * pulseRate);
             
             // 绘制霓虹星星 - 中心+发光效果
             this.ctx.globalAlpha = flickerAlpha;
-            this.ctx.fillStyle = neonColors[colorIndex];
+            this.ctx.fillStyle = softColors[colorIndex];
             this.ctx.beginPath();
             this.ctx.arc(x, y, size, 0, Math.PI * 2);
             this.ctx.fill();
             
-            // 添加发光效果
-            this.ctx.globalAlpha = flickerAlpha * 0.5;
-            const gradient = this.ctx.createRadialGradient(x, y, size * 0.5, x, y, size * 3);
-            gradient.addColorStop(0, neonColors[colorIndex]);
+            // 添加发光效果，但减小光晕范围，降低亮度
+            this.ctx.globalAlpha = flickerAlpha * 0.3;
+            const gradient = this.ctx.createRadialGradient(x, y, size * 0.5, x, y, size * 2);
+            gradient.addColorStop(0, softColors[colorIndex]);
             gradient.addColorStop(1, 'rgba(0,0,0,0)');
             this.ctx.fillStyle = gradient;
             this.ctx.beginPath();
-            this.ctx.arc(x, y, size * 3, 0, Math.PI * 2);
+            this.ctx.arc(x, y, size * 2, 0, Math.PI * 2);
             this.ctx.fill();
         }
         
-        // 添加电子粒子效果 - 在背景中随机移动的小点
-        for (let i = 0; i < 15; i++) {
+        // 添加电子粒子效果 - 使用更淡的颜色
+        for (let i = 0; i < 10; i++) { // 减少数量
             const timeOffset = i * 1000; // 每个粒子有不同的时间偏移
             const x = (this.canvas.width * 0.1) + (this.canvas.width * 0.8) * ((Math.sin(this.survivalTime * 0.001 + timeOffset) + 1) / 2);
             const y = (this.canvas.height * 0.1) + (this.canvas.height * 0.7) * ((Math.cos(this.survivalTime * 0.0015 + timeOffset) + 1) / 2);
-            const size = 1 + Math.sin(this.survivalTime * 0.01 + i) * 0.5;
+            const size = 0.8 + Math.sin(this.survivalTime * 0.01 + i) * 0.3;
             
-            this.ctx.globalAlpha = 0.7 + Math.sin(this.survivalTime * 0.005 + i) * 0.3;
-            this.ctx.fillStyle = '#80f0ff';
+            this.ctx.globalAlpha = 0.4 + Math.sin(this.survivalTime * 0.005 + i) * 0.2;
+            this.ctx.fillStyle = 'rgba(120, 180, 210, 0.3)'; // 更淡的蓝色
             this.ctx.beginPath();
             this.ctx.arc(x, y, size, 0, Math.PI * 2);
             this.ctx.fill();
