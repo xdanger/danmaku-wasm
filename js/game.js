@@ -186,8 +186,15 @@ class Game {
     
     gameOver() {
         this.state = GameState.GAME_OVER;
-        // 显示游戏时间（保留两位小数）
-        this.finalTimeDisplay.textContent = this.formatTime(this.survivalTime);
+        
+        // 如果启用过无敌模式，则不显示最终时间
+        if (this.isInvincible) {
+            this.finalTimeDisplay.textContent = "无敌模式使用过";
+        } else {
+            // 显示游戏时间
+            this.finalTimeDisplay.textContent = this.formatTime(this.survivalTime);
+        }
+        
         this.gameOverScreen.classList.remove('hidden');
         
         // 创建爆炸效果（仅在非极低性能模式下）
