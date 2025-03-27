@@ -45,4 +45,8 @@
 4. 从GitHub导入您fork的仓库
 5. 保持默认设置，点击"Deploy"
 
-部署完成后，您将获得一个可访问的URL来玩这个游戏。 
+部署完成后，您将获得一个可访问的URL来玩这个游戏。
+
+## 项目地址
+
+GitHub: [https://github.com/dashhuang/danmaku-game](https://github.com/dashhuang/danmaku-game) 
