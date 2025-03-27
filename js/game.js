@@ -34,6 +34,9 @@ class Game {
         this.particles = [];
         this.enemies = [];
         
+        // 初始化弹幕发射器
+        this.bulletEmitter = new BulletEmitter(this);
+        
         // 触摸控制相关变量
         this.isTouching = false;
         this.touchX = 0;
@@ -238,6 +241,11 @@ class Game {
         this.particles = [];
         this.enemies = [];
         this.hasUsedInvincible = false; // 重置无敌模式使用标志
+        
+        // 重置弹幕生成系统
+        this.nextBulletTime = 2000; // 给玩家2秒准备时间
+        this.bulletFrequencyMin = null;
+        this.bulletFrequencyMax = null;
         
         // 重置性能监控
         this.fpsHistory = [];
@@ -1020,8 +1028,15 @@ class Game {
     }
     
     updateUI() {
-        // 更新时间显示，格式为分:秒.毫秒
-        this.timeDisplay.textContent = this.formatTime(this.survivalTime);
+        // 只在游戏中才更新时间显示
+        if (this.state === GameState.PLAYING) {
+            try {
+                // 更新时间显示，格式为秒.毫秒
+                this.timeDisplay.textContent = this.formatTime(this.survivalTime);
+            } catch (error) {
+                console.error("更新时间显示出错:", error);
+            }
+        }
     }
 
     render() {
@@ -1252,6 +1267,14 @@ class Game {
     
     // 格式化时间为秒.毫秒
     formatTime(timeInSeconds) {
+        // 处理undefined或NaN的情况
+        if (timeInSeconds === undefined || isNaN(timeInSeconds)) {
+            return "00.00";
+        }
+        
+        // 确保时间是一个有效的数字
+        timeInSeconds = Math.max(0, timeInSeconds);
+        
         const seconds = Math.floor(timeInSeconds);
         const milliseconds = Math.floor((timeInSeconds % 1) * 100);
         
