@@ -26,6 +26,7 @@ class Game {
         this.survivalTime = 0; // 改为存活时间
         this.isDebug = false;
         this.isInvincible = false; // 无敌模式标志
+        this.hasUsedInvincible = false; // 记录是否曾经使用过无敌模式
         
         // 游戏元素
         this.player = null;
@@ -140,6 +141,11 @@ class Game {
         if (this.isDebug) {
             this.isInvincible = !this.isInvincible;
             console.log('无敌模式:', this.isInvincible ? '开启' : '关闭');
+            
+            // 如果开启了无敌模式，记录使用过无敌模式
+            if (this.isInvincible) {
+                this.hasUsedInvincible = true;
+            }
         } else {
             console.log('请先开启调试模式');
         }
@@ -157,6 +163,7 @@ class Game {
         this.bullets = [];
         this.particles = [];
         this.enemies = [];
+        this.hasUsedInvincible = false; // 重置无敌模式使用标志
         
         // 重置性能监控
         this.fpsHistory = [];
@@ -187,8 +194,8 @@ class Game {
     gameOver() {
         this.state = GameState.GAME_OVER;
         
-        // 如果启用过无敌模式，则不显示最终时间
-        if (this.isInvincible) {
+        // 如果曾经启用过无敌模式，则不显示最终时间
+        if (this.hasUsedInvincible) {
             this.finalTimeDisplay.textContent = "无敌模式使用过";
         } else {
             // 显示游戏时间
