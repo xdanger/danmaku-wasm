@@ -98,6 +98,19 @@
             display: none;
         }
         
+        .new-record {
+            color: #ff00ff;
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+            animation: pulse 1s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { opacity: 0.7; }
+            to { opacity: 1; }
+        }
+        
         .controls {
             position: absolute;
             bottom: 20px;
@@ -144,6 +157,8 @@
             <div id="game-over-screen" class="game-over hidden">
                 <h2>游戏结束</h2>
                 <p>坚持时间: <span id="final-time">00.00</span></p>
+                <p>最高记录: <span id="best-time">00.00</span></p>
+                <p id="new-record" class="hidden">恭喜！创造了新纪录！</p>
                 <button id="restart-button">再来一次</button>
             </div>
             

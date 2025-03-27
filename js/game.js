@@ -28,6 +28,9 @@ class Game {
         this.isInvincible = false; // 无敌模式标志
         this.hasUsedInvincible = false; // 记录是否曾经使用过无敌模式
         
+        // 记录最高时间
+        this.bestTime = this.loadBestTime();
+        
         // 游戏元素
         this.player = null;
         this.bullets = [];
@@ -233,6 +236,13 @@ class Game {
         this.startScreen.classList.add('hidden');
         this.gameOverScreen.classList.add('hidden');
         
+        // 隐藏新纪录提示
+        const newRecordElement = document.getElementById('new-record');
+        if (newRecordElement) {
+            newRecordElement.classList.add('hidden');
+            newRecordElement.classList.remove('new-record');
+        }
+        
         // 重置游戏状态
         this.survivalTime = 0;
         this.difficulty = 1;
@@ -276,12 +286,34 @@ class Game {
     gameOver() {
         this.state = GameState.GAME_OVER;
         
+        // 获取DOM元素
+        const bestTimeDisplay = document.getElementById('best-time');
+        const newRecordElement = document.getElementById('new-record');
+        
         // 如果曾经启用过无敌模式，则不显示最终时间
         if (this.hasUsedInvincible) {
             this.finalTimeDisplay.textContent = "无敌模式使用过";
+            bestTimeDisplay.textContent = this.formatTime(this.bestTime);
+            newRecordElement.classList.add('hidden');
+            newRecordElement.classList.remove('new-record');
         } else {
             // 显示游戏时间
             this.finalTimeDisplay.textContent = this.formatTime(this.survivalTime);
+            
+            // 检查是否创造了新纪录
+            const isNewRecord = this.saveBestTime(this.survivalTime);
+            
+            // 显示最高记录
+            bestTimeDisplay.textContent = this.formatTime(this.bestTime);
+            
+            // 如果创造了新纪录，显示恭喜信息
+            if (isNewRecord) {
+                newRecordElement.classList.remove('hidden');
+                newRecordElement.classList.add('new-record');
+            } else {
+                newRecordElement.classList.add('hidden');
+                newRecordElement.classList.remove('new-record');
+            }
         }
         
         this.gameOverScreen.classList.remove('hidden');
@@ -1337,6 +1369,22 @@ class Game {
             this.maxParticles = this.initialMaxParticles;
             console.log("恢复正常性能模式");
         }
+    }
+    
+    // 从localStorage加载最高时间记录
+    loadBestTime() {
+        const savedTime = localStorage.getItem('danmakuGameBestTime');
+        return savedTime ? parseFloat(savedTime) : 0;
+    }
+    
+    // 保存最高时间记录到localStorage
+    saveBestTime(time) {
+        if (!this.hasUsedInvincible && time > this.bestTime) {
+            this.bestTime = time;
+            localStorage.setItem('danmakuGameBestTime', time.toString());
+            return true; // 返回true表示创造了新纪录
+        }
+        return false;
     }
 }
 
