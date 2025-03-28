@@ -39,7 +39,10 @@ cd danmaku-wasm
 bun install
 
 # 开发服务器
-bun start
+bun run dev
+
+# 开发服务器
+bun run start
 
 # 构建生产版本
 bun run build
