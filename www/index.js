@@ -48,7 +48,8 @@ function setupCanvas() {
 	const aspectRatio = 3 / 4;
 
 	// Calculate size based on available space
-	let width, height;
+	let width;
+	let height;
 	if (containerWidth / containerHeight > aspectRatio) {
 		// Container is wider than needed
 		height = Math.min(containerHeight, 720);
@@ -111,10 +112,10 @@ function updatePlayerVelocity() {
 	let dy = 0;
 
 	// Check arrow keys or WASD
-	if (keyStates["ArrowLeft"] || keyStates["KeyA"]) dx -= 1;
-	if (keyStates["ArrowRight"] || keyStates["KeyD"]) dx += 1;
-	if (keyStates["ArrowUp"] || keyStates["KeyW"]) dy -= 1;
-	if (keyStates["ArrowDown"] || keyStates["KeyS"]) dy += 1;
+	if (keyStates.ArrowLeft || keyStates.KeyA) dx -= 1;
+	if (keyStates.ArrowRight || keyStates.KeyD) dx += 1;
+	if (keyStates.ArrowUp || keyStates.KeyW) dy -= 1;
+	if (keyStates.ArrowDown || keyStates.KeyS) dy += 1;
 
 	// Normalize diagonal movement
 	if (dx !== 0 && dy !== 0) {
@@ -236,7 +237,7 @@ function drawBackground() {
 function drawGame(renderData) {
 	// Draw bullets with trail effect
 	const bullets = renderData.bullets;
-	if (bullets && bullets.length) {
+	if (bullets?.length) {
 		for (let i = 0; i < bullets.length; i++) {
 			const bullet = bullets[i];
 
@@ -364,12 +365,14 @@ function handleGameState(state) {
 			break;
 
 		case 2: // GameState::GameOver
-			// Show game over screen
-			document.getElementById("game-over-screen").classList.remove("hidden");
+			{
+				// Show game over screen
+				document.getElementById("game-over-screen").classList.remove("hidden");
 
-			// Update final time
-			const finalTimeElement = document.getElementById("final-time");
-			finalTimeElement.textContent = game.get_survival_time().toFixed(1);
+				// Update final time
+				const finalTimeElement = document.getElementById("final-time");
+				finalTimeElement.textContent = game.get_survival_time().toFixed(1);
+			}
 			break;
 	}
 }
