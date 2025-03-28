@@ -36,6 +36,9 @@ class Game {
         // 记录最高时间
         this.bestTime = this.loadBestTime();
         
+        // 游戏暂停状态
+        this.isPaused = false;
+        
         // 游戏元素
         this.player = null;
         this.bullets = [];
@@ -89,6 +92,9 @@ class Game {
         this.performanceCheckTimer = 0;
         this.performanceCheckInterval = 2000; // 每2秒检查一次性能
         this.lowPerformanceMode = false; // 低性能模式标志
+        
+        // 游戏时间戳
+        this.lastTime = 0; // 用于计算deltaTime
         
         // 获取游戏UI元素
         this.startScreen = document.getElementById('start-screen');
@@ -184,6 +190,37 @@ class Game {
         // 响应窗口大小变化
         window.addEventListener('resize', () => this.handleResize());
         this.handleResize();
+        
+        // 绑定页面可见性事件
+        this.bindVisibilityChange();
+    }
+    
+    bindVisibilityChange() {
+        document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+    }
+
+    handleVisibilityChange() {
+        if (document.hidden) {
+            // 页面隐藏，暂停游戏
+            if (this.isRunning && this.state === GameState.PLAYING) {
+                this.isPaused = true;
+                console.log("Game paused due to visibility change.");
+            }
+        } else {
+            // 页面恢复可见
+            if (this.isPaused) { // 只有从暂停状态恢复时才执行
+                this.isPaused = false;
+                console.log("Game resumed.");
+                // 重置 lastTime 以避免时间跳跃
+                this.lastTime = performance.now();
+                // 重新启动游戏循环 (如果游戏仍在运行状态)
+                if (this.isRunning && this.state === GameState.PLAYING) {
+                    // 使用 requestAnimationFrame 启动，而不是直接调用 gameLoop()
+                    // 以便 currentTime 能被正确传入
+                    requestAnimationFrame((time) => this.gameLoop(time));
+                }
+            }
+        }
     }
     
     bindEvents() {
@@ -380,12 +417,27 @@ class Game {
     }
 
     gameLoop(currentTime) {
-        if (!this.isRunning) return;
+        // 如果游戏暂停或未运行或不在游玩状态，则不执行任何操作，也不请求下一帧
+        if (this.isPaused || !this.isRunning || this.state !== GameState.PLAYING) {
+            return;
+        }
         
         // 计算时间差
-        if (!currentTime) currentTime = performance.now();
+        // currentTime 会在 requestAnimationFrame 回调时传入
+        if (!currentTime) currentTime = performance.now(); // 第一次或恢复时
+        // 确保 lastTime 有初始值
+        if (!this.lastTime) this.lastTime = currentTime - (1000 / 60); // 假设初始为 60fps
+
         this.deltaTime = currentTime - this.lastTime;
         this.lastTime = currentTime;
+        
+        // 添加一个deltaTime的上限，防止后台恢复时delta过大导致异常
+        // 例如，限制最大帧时长为 1/15 秒 (约 66.7ms)
+        const maxDeltaTime = 1000 / 15;
+        if (this.deltaTime > maxDeltaTime) {
+            console.warn(`Large deltaTime detected (${this.deltaTime.toFixed(2)}ms), capping to ${maxDeltaTime.toFixed(2)}ms.`);
+            this.deltaTime = maxDeltaTime;
+        }
         
         // 更新游戏状态
         this.update();
@@ -393,7 +445,7 @@ class Game {
         // 渲染游戏
         this.render();
         
-        // 继续下一帧
+        // 继续下一帧 - 只有在未暂停且游戏运行时才请求
         requestAnimationFrame((time) => this.gameLoop(time));
     }
 
