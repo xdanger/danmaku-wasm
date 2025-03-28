@@ -18,3 +18,7 @@ yarn-error.log*
 *.tmp
 *.swp
 *~ 
+
+# Added by cargo
+
+/target

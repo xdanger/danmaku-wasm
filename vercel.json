@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "name": "danmaku-game",
-  "builds": [
-    { "src": "**", "use": "@vercel/static" }
-  ],
+  "name": "danmaku-wasm",
+  "buildCommand": "wasm-pack build --target web && npx webpack --mode production",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
   "routes": [
+    { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
-} 
+}

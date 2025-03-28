@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Danmaku Game - WebAssembly Version</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <div id="menu-screen" class="screen">
+            <h1>Danmaku Game</h1>
+            <p>Avoid the bullets for as long as you can!</p>
+            <button id="start-button" class="game-button">Start Game</button>
+        </div>
+
+        <div id="game-over-screen" class="screen hidden">
+            <h1>Game Over</h1>
+            <p>You survived for <span id="final-time">0</span> seconds!</p>
+            <button id="restart-button" class="game-button">Play Again</button>
+        </div>
+
+        <div id="game-ui">
+            <div id="time-display">Time: <span id="time">0.0</span>s</div>
+        </div>
+    </div>
+
+    <!-- Script will be injected by webpack -->
+</body>
+
+</html>
