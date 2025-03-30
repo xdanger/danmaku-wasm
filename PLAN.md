@@ -1,24 +1,24 @@
-# 使用Bevy引擎重写弹幕游戏为纯Rust实现
+# 使用 Bevy 引擎重写弹幕游戏为纯 Rust 实现
 
 ## 项目概述
 
-当前项目是一个使用JavaScript和Canvas API开发的2D弹幕飞机游戏。我们计划完全重写游戏，使用Rust语言和Bevy游戏引擎实现，以实现以下目标：
+当前项目是一个使用 JavaScript 和 Canvas API 开发的 2D 弹幕飞机游戏。我们计划完全重写游戏，使用 Rust 语言和 Bevy 游戏引擎实现，以实现以下目标：
 
-1. 完全消除对JavaScript的依赖
+1. 完全消除对 JavaScript 的依赖
 2. 提高游戏性能和响应速度
-3. 同时支持原生应用和WebAssembly部署
+3. 同时支持原生应用和 WebAssembly 部署
 4. 简化代码架构，提高可维护性
 5. 改善在移动设备上的体验
 
-Bevy是一个基于ECS（实体组件系统）的Rust游戏引擎，使用现代渲染API，而不是依赖Canvas进行2D渲染。
+Bevy 是一个基于 ECS（实体组件系统）的 Rust 游戏引擎，使用现代渲染 API，而不是依赖 Canvas 进行 2D 渲染。
 
 ## 阶段一：准备与评估
 
 ### 1. 现有代码库分析
 
 - **当前架构**：
-  - 纯JavaScript实现的游戏逻辑
-  - 使用Canvas API进行渲染
+  - 纯 JavaScript 实现的游戏逻辑
+  - 使用 Canvas API 进行渲染
   - 包含多种弹幕模式和粒子效果
   - 支持键盘和触摸控制
   - 包含性能自适应机制
@@ -27,24 +27,24 @@ Bevy是一个基于ECS（实体组件系统）的Rust游戏引擎，使用现代
   - 大量弹幕和粒子的物理计算
   - 复杂的碰撞检测
   - 复杂图案生成（如心形、星形弹幕）
-  - JavaScript单线程限制
-  - Canvas渲染性能有限
+  - JavaScript 单线程限制
+  - Canvas 渲染性能有限
 
 ### 2. 环境设置
 
-- **Rust与Bevy开发环境**：
+- **Rust 与 Bevy 开发环境**：
 
   ```bash
-  # 安装Rust和Cargo
+  # 安装 Rust 和 Cargo
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-  # 添加WebAssembly目标支持
+  # 添加 WebAssembly 目标支持
   rustup target add wasm32-unknown-unknown
 
-  # 安装wasm-bindgen-cli (用于生成WebAssembly绑定)
+  # 安装 wasm-bindgen-cli (用于生成 WebAssembly 绑定)
   cargo install wasm-bindgen-cli
 
-  # 安装HTTP服务器（用于测试WebAssembly版本）
+  # 安装 HTTP 服务器（用于测试 WebAssembly 版本）
   cargo install basic-http-server
   ```
 
@@ -56,7 +56,7 @@ Bevy是一个基于ECS（实体组件系统）的Rust游戏引擎，使用现代
   cd danmaku-bevy
   ```
 
-- **添加Bevy依赖到Cargo.toml**：
+- **添加 Bevy 依赖到 Cargo.toml**：
 
   ```toml
   [package]
@@ -72,7 +72,7 @@ Bevy是一个基于ECS（实体组件系统）的Rust游戏引擎，使用现代
   [profile.dev]
   opt-level = 1
 
-  # 优化依赖库（包括Bevy）
+  # 优化依赖库（包括 Bevy）
   [profile.dev.package."*"]
   opt-level = 3
 
@@ -81,12 +81,12 @@ Bevy是一个基于ECS（实体组件系统）的Rust游戏引擎，使用现代
   lto = true
   codegen-units = 1
 
-  # 在Linux下使用动态链接加速开发
+  # 在 Linux 下使用动态链接加速开发
   [target.'cfg(target_os = "linux")'.dependencies.bevy]
   version = "0.12"
   features = ["dynamic_linking"]
 
-  # 为WebAssembly构建配置Bevy
+  # 为 WebAssembly 构建配置 Bevy
   [target.'cfg(target_arch = "wasm32")'.dependencies]
   bevy = { version = "0.12", default-features = false, features = [
     "bevy_winit",
@@ -98,7 +98,7 @@ Bevy是一个基于ECS（实体组件系统）的Rust游戏引擎，使用现代
   ]}
   ```
 
-- **创建WebAssembly的HTML入口文件**：
+- **创建 WebAssembly 的 HTML 入口文件**：
 
   ```html
   <!DOCTYPE html>
@@ -153,13 +153,13 @@ Bevy是一个基于ECS（实体组件系统）的Rust游戏引擎，使用现代
   </html>
   ```
 
-## 阶段二：Bevy与ECS架构实现
+## 阶段二：Bevy 与 ECS 架构实现
 
 ### 1. 游戏架构设计
 
-Bevy使用ECS（实体组件系统）架构，这完全不同于传统的面向对象方法：
+Bevy 使用 ECS（实体组件系统）架构，这完全不同于传统的面向对象方法：
 
-- **实体（Entity）**：游戏中的对象，仅作为唯一ID存在
+- **实体（Entity）**：游戏中的对象，仅作为唯一 ID 存在
 - **组件（Component）**：纯数据，不包含行为逻辑
 - **系统（System）**：包含游戏逻辑，处理特定组件类型
 
@@ -299,7 +299,7 @@ fn check_collisions(
 ### 1. 实现多种弹幕模式
 
 ```rust
-// 在spawn_bullets系统中
+// 在 spawn_bullets 系统中
 match pattern_type {
     0 => {
         // 圆形弹幕
@@ -346,7 +346,7 @@ commands.spawn((
 ));
 ```
 
-## 阶段四：UI系统与游戏状态
+## 阶段四：UI 系统与游戏状态
 
 ### 1. 游戏菜单界面
 
@@ -428,7 +428,7 @@ fn setup_game_over(
             ..default()
         })
         .with_children(|parent| {
-            // Game Over标题
+            // Game Over 标题
             parent.spawn(TextBundle::from_section(
                 "GAME OVER",
                 TextStyle {
@@ -466,7 +466,7 @@ cargo run
 cargo run --release
 ```
 
-### 2. WebAssembly构建
+### 2. WebAssembly 构建
 
 ```bash
 # 构建WebAssembly
@@ -481,7 +481,7 @@ basic-http-server .
 
 ### 3. 部署更新
 
-更新Vercel配置文件（vercel.json）：
+更新 Vercel 配置文件（vercel.json）：
 
 ```json
 {
@@ -493,21 +493,21 @@ basic-http-server .
 
 ## 优势与收益
 
-使用Bevy引擎和纯Rust实现相比于原始JavaScript+Canvas方案的优势：
+使用 Bevy 引擎和纯 Rust 实现相比于原始 JavaScript+Canvas 方案的优势：
 
 1. **性能大幅提升**：
-   - Rust的零成本抽象提供更高效的CPU利用
-   - ECS架构优化数据布局，提高缓存命中率
-   - 使用GPU加速渲染，而不是依赖CPU渲染的Canvas
+   - Rust 的零成本抽象提供更高效的 CPU 利用
+   - ECS 架构优化数据布局，提高缓存命中率
+   - 使用 GPU 加速渲染，而不是依赖 CPU 渲染的 Canvas
 
 2. **代码质量改进**：
-   - Rust强类型系统减少运行时错误
-   - ECS架构使游戏逻辑更容易理解和扩展
+   - Rust 强类型系统减少运行时错误
+   - ECS 架构使游戏逻辑更容易理解和扩展
    - 统一的系统接口简化开发
 
 3. **跨平台支持**：
-   - 同一份代码可编译为原生应用或WebAssembly
-   - 支持Windows、macOS、Linux等多平台
+   - 同一份代码可编译为原生应用或 WebAssembly
+   - 支持 Windows、macOS、Linux 等多平台
    - 更容易扩展到移动平台
 
 4. **更高级的渲染能力**：
@@ -517,19 +517,19 @@ basic-http-server .
 
 ## 时间估计
 
-- **阶段一（准备与环境设置）**：1天
-- **阶段二（Bevy与ECS架构实现）**：3-5天
-- **阶段三（弹幕模式与视觉效果）**：2-3天
-- **阶段四（UI系统与游戏状态）**：2-3天
-- **阶段五（编译与部署）**：1天
+- **阶段一（准备与环境设置）**：1 天
+- **阶段二（Bevy 与 ECS 架构实现）**：3-5 天
+- **阶段三（弹幕模式与视觉效果）**：2-3 天
+- **阶段四（UI 系统与游戏状态）**：2-3 天
+- **阶段五（编译与部署）**：1 天
 
-总计：约9-12天
+总计：约 9-12 天
 
 ## 资源和参考链接
 
-- [Bevy官方网站](https://bevyengine.org/)
-- [Bevy官方文档](https://docs.rs/bevy/latest/bevy/)
-- [Bevy GitHub仓库](https://github.com/bevyengine/bevy)
-- [Rust官方文档](https://www.rust-lang.org/learn)
-- [WebAssembly MDN参考](https://developer.mozilla.org/zh-CN/docs/WebAssembly)
+- [Bevy 官方网站](https://bevyengine.org/)
+- [Bevy 官方文档](https://docs.rs/bevy/latest/bevy/)
+- [Bevy GitHub 仓库](https://github.com/bevyengine/bevy)
+- [Rust 官方文档](https://www.rust-lang.org/learn)
+- [WebAssembly MDN 参考](https://developer.mozilla.org/zh-CN/docs/WebAssembly)
 - [Bevy Cheatbook](https://bevy-cheatbook.github.io/)
