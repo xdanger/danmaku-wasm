@@ -35,6 +35,14 @@
             color: #00FFFF;
             font-size: 24px;
             text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            background-color: rgba(5, 10, 48, 0.8);
+            padding: 20px;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -44,15 +52,92 @@
     <script type="module">
         import init from './target/wasm_bindgen/danmaku-bevy.js';
 
-        async function run() {
-            // Initialize the WASM module
-            await init();
-
-            // Hide loading screen once game is loaded
-            document.getElementById('loading-screen').style.display = 'none';
+        // Helper function to hide loading screen
+        function hideLoadingScreen() {
+            const loadingElement = document.getElementById('loading-screen');
+            if (loadingElement) {
+                console.log("Removing loading screen");
+                loadingElement.style.display = 'none';
+                // Also try removing it completely from DOM
+                try {
+                    loadingElement.parentNode.removeChild(loadingElement);
+                } catch (e) {
+                    console.log("Could not remove loading element from DOM:", e);
+                }
+            }
         }
 
-        run().catch(console.error);
+        // Setup a MutationObserver to detect when canvas is added to the DOM
+        const observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === 'childList') {
+                    const canvas = document.querySelector('canvas');
+                    if (canvas) {
+                        console.log("Canvas detected! Hiding loading screen");
+                        hideLoadingScreen();
+                        observer.disconnect();
+                        break;
+                    }
+                }
+            }
+        });
+
+        // Start observing DOM changes
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        // Set multiple timeouts with increasing delays to ensure loading screen is removed
+        const timeouts = [1000, 2000, 3000, 5000];
+        timeouts.forEach(timeout => {
+            setTimeout(() => {
+                console.log(`Checking loading status after ${timeout}ms`);
+                hideLoadingScreen();
+            }, timeout);
+        });
+
+        async function run() {
+            try {
+                console.log("Initializing WebAssembly module...");
+                // Initialize the WASM module
+                const wasm = await init();
+                console.log("WebAssembly module initialized successfully!");
+
+                // Hide loading screen immediately after init
+                hideLoadingScreen();
+
+                // Also check after a short delay
+                setTimeout(hideLoadingScreen, 500);
+            } catch (error) {
+                console.error("Error initializing game:", error);
+                // Even on error, try to hide loading screen
+                hideLoadingScreen();
+            }
+        }
+
+        // Set up visibility change detection to fix issues when tab is inactive
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                // When returning to the tab, hide loading if canvas exists
+                const canvas = document.querySelector('canvas');
+                if (canvas) {
+                    hideLoadingScreen();
+                }
+            }
+        });
+
+        // Add keyboard listener to hide loading screen on any key press
+        document.addEventListener('keydown', () => {
+            hideLoadingScreen();
+        });
+
+        // Also hide on mouse click
+        document.addEventListener('click', () => {
+            hideLoadingScreen();
+        });
+
+        run().catch(error => {
+            console.error("Run failed:", error);
+            hideLoadingScreen();
+        });
     </script>
 </body>
 
