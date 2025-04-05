@@ -512,7 +512,23 @@ fn check_collisions(
 }
 
 // Game over screen setup
-fn setup_game_over(mut commands: Commands, game_data: Res<GameData>) {
+fn setup_game_over(mut commands: Commands, game_data: Res<GameData>, player_query: Query<Entity, With<Player>>, bullet_query: Query<Entity, With<Bullet>>) {
+    // 移除玩家实体
+    match player_query.get_single() {
+        Ok(player_entity) => {
+            commands.entity(player_entity).despawn_recursive();
+            info!("玩家实体已成功移除: {:?}", player_entity);
+        }
+        Err(e) => {
+            warn!("未能找到玩家实体: {:?}", e);
+        }
+    }
+
+    // 移除子弹实体
+    for bullet_entity in bullet_query.iter() {
+        commands.entity(bullet_entity).despawn();
+    }
+
     commands
         .spawn(NodeBundle {
             style: Style {
