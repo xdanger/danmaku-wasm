@@ -98,8 +98,11 @@ fn main() {
 
 // Initial setup
 fn setup(mut commands: Commands) {
-    // Add camera
-    commands.spawn((Camera2dBundle::default(), MainCamera));
+    // 设置相机位置在窗口中心
+    commands.spawn((Camera2dBundle {
+        transform: Transform::from_translation(Vec3::new(WINDOW_WIDTH / 2.0, WINDOW_HEIGHT / 2.0, 999.9)),
+        ..default()
+    }, MainCamera));
 }
 
 // Menu screen setup
@@ -210,10 +213,11 @@ fn start_game(
             material: materials.add(ColorMaterial::from(Color::CYAN)),
             transform: Transform::from_translation(Vec3::new(
                 WINDOW_WIDTH / 2.0,
-                WINDOW_HEIGHT * 0.8,
-                0.0,
+                WINDOW_HEIGHT * 0.2,
+                10.0,
             ))
-            .with_rotation(Quat::from_rotation_z(std::f32::consts::PI)),
+            .with_scale(Vec3::splat(1.5))
+            .with_rotation(Quat::from_rotation_z(0.0)),
             ..default()
         },
         Player {
